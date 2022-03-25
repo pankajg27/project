@@ -1,14 +1,17 @@
 from ast import arg
+import imp
 from multiprocessing import context
 from pyexpat import model
 from re import template
 from select import select
+from time import time
 from typing import Generic
 import django
 from django.shortcuts import get_object_or_404, render
 from django.http import Http404, HttpResponseRedirect
 from django.template import loader
 from django.urls import reverse
+from django.utils import timezone
 from .models import Question,Choice
 from django.views import generic
 # Create your views here.
@@ -19,7 +22,8 @@ class IndexView(generic.ListView):
     context_object_name='latest_question_list'
 
     def get_queryset(self):
-        return Question.objects.order_by('-pub_date')[:5]
+        """Return the last five published questions.(not incuding those set to be published in the future)"""
+        return Question.objects.filter(pub_date__lte=timezone.now()).order_by('-pub_date')[:5]
 
 class DetailView(generic.DetailView):
     model=Question
